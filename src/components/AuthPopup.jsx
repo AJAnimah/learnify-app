@@ -1,15 +1,24 @@
+// src/components/AuthPopup.js
 import { useRef, useEffect, useState } from "react";
-import PropTypes from "prop-types"; // Import PropTypes for prop validation
+import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faLock, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom"; // For navigation
-import googleIcon from "../assets/google-icon.png"; // Import the Google icon PNG
+import { useNavigate } from "react-router-dom";
+import googleIcon from "../assets/google-icon.png";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { signup, login } from "../api/api";
 
 export default function AuthPopup({ isLogin, setIsLogin, onClose }) {
   const popupRef = useRef(null);
-  const [showPassword, setShowPassword] = useState(false); // Toggle password visibility
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Toggle confirm password visibility
-  const navigate = useNavigate(); // For redirecting after login/signup
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
 
   // Close popup when clicking outside
   useEffect(() => {
@@ -23,17 +32,29 @@ export default function AuthPopup({ isLogin, setIsLogin, onClose }) {
   }, [onClose]);
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate successful login/signup
-    if (isLogin) {
-      console.log("Login successful");
-      navigate("/learner"); // Redirect to learner's page
-    } else {
-      console.log("Signup successful");
-      navigate("/learner-dashboard"); // Redirect to learner's dashboard
+    setIsLoading(true);
+
+    try {
+      if (isLogin) {
+        // Login
+        const response = await login(email, password);
+        localStorage.setItem("token", response.token); // Store token
+        toast.success("Login successful!");
+        navigate("/learner"); // Redirect to learner's page
+      } else {
+        // Signup
+        await signup(email, email, password); // Use email as username
+        toast.success("Signup successful!");
+        navigate("/dashboard"); // Redirect to dashboard
+      }
+      onClose(); // Close the popup
+    } catch (error) {
+      toast.error(error.message || "An error occurred");
+    } finally {
+      setIsLoading(false);
     }
-    onClose(); // Close the popup
   };
 
   return (
@@ -44,7 +65,7 @@ export default function AuthPopup({ isLogin, setIsLogin, onClose }) {
       {/* "Log in using Google or" or "Signup using Google or" */}
       <div className="text-sm text-[#01589A] font-bold text-center mb-4">
         <div className="flex items-center justify-center">
-          <img src={googleIcon} alt="Google Icon" className="w-6 h-6 mr-2" /> {/* Google icon PNG */}
+          <img src={googleIcon} alt="Google Icon" className="w-6 h-6 mr-2" />
           {isLogin ? "Log in using Google" : "Signup using Google"}
         </div>
         <p className="mt-2">or</p>
@@ -58,6 +79,8 @@ export default function AuthPopup({ isLogin, setIsLogin, onClose }) {
             <input
               type="email"
               placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full p-2 pl-10 border rounded"
               required
             />
@@ -74,6 +97,8 @@ export default function AuthPopup({ isLogin, setIsLogin, onClose }) {
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full p-2 pl-10 border rounded"
               required
             />
@@ -105,6 +130,8 @@ export default function AuthPopup({ isLogin, setIsLogin, onClose }) {
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full p-2 pl-10 border rounded"
                 required
               />
@@ -127,8 +154,9 @@ export default function AuthPopup({ isLogin, setIsLogin, onClose }) {
         <button
           type="submit"
           className="w-full bg-[#01589A] text-white p-2 rounded"
+          disabled={isLoading}
         >
-          {isLogin ? "Login" : "Sign Up"}
+          {isLoading ? "Loading..." : isLogin ? "Login" : "Sign Up"}
         </button>
       </form>
 
