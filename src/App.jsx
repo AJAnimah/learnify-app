@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Register from "./pages/Register";
 
+
 export default function App() {
   return (
     <Router>
@@ -11,6 +12,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/register" element={<Register />} />
+      
       </Routes>
     </Router>
   );

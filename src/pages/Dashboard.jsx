@@ -26,7 +26,7 @@ export default function Dashboard() {
             className="flex items-center space-x-2"
           >
             <FaUserCircle size={24} />
-            <span>John Doe</span>
+            <span>{localStorage.getItem("userEmail")}</span>
             <IoMdArrowDropdown />
           </button>
           {userMenuOpen && (

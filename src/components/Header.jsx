@@ -1,47 +1,40 @@
-// src/components/Header.js
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../assets/azubi-logo.png";
 import AuthPopup from "./AuthPopup";
 import ProfileDropdown from "./ProfileDropdown";
-import { login, logout } from "../api/api";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export default function Header() {
   const [showPopup, setShowPopup] = useState(false);
-  const [isLogin, setIsLogin] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
-  const [userName, setUserName] = useState(""); // Initialize with an empty string
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("userEmail")); // Check if user is logged in
+  const [userEmail, setUserEmail] = useState(""); // Initialize with an empty string
   const navigate = useNavigate();
 
-  // Handle login
-  const handleLogin = async (email, password) => {
-    try {
-      const response = await login(email, password);
-      localStorage.setItem("token", response.token); // Store token
-      setUserName(response.user.username); // Set the user's name from the API response
-      setIsLoggedIn(true);
-      toast.success("Login successful!");
-      navigate("/learner"); // Redirect to learner's page
-    } catch (error) {
-      toast.error(error.message || "Login failed");
-    }
-  };
 
   // Handle logout
-  const handleLogout = async () => {
-    try {
-      await logout(localStorage.getItem("token"));
-      localStorage.removeItem("token");
-      setIsLoggedIn(false);
-      setUserName(""); // Clear the user's name
+  const handleLogout = () => {
+    localStorage.removeItem("userEmail"); // Clear useremail data
+      setIsLoggedIn(false); // Update login state
+      setUserEmail(""); // Clear the user's name
+
+      // Show success message
       toast.success("Logged out successfully!");
+
+      // Redirect to the home page
       navigate("/"); // Redirect to home page
-    } catch (error) {
-      toast.error(error.message || "Logout failed");
-    }
+    
   };
+
+  useEffect(() =>{
+    if(isLoggedIn){
+      setUserEmail(localStorage.getItem("userEmail"))
+    } else{
+      setUserEmail("")
+    }
+    
+  },[isLoggedIn])
 
   return (
     <header className="bg-white shadow-md py-4 fixed top-0 w-full z-10 px-[201px]">
@@ -79,15 +72,14 @@ export default function Header() {
 
             {showPopup && (
               <AuthPopup
-                isLogin={isLogin}
-                setIsLogin={setIsLogin}
-                onClose={() => setShowPopup(false)}
-                onLogin={handleLogin} // Pass login handler
+                setIsLoggedIn={setIsLoggedIn}
+                onClose={() => setShowPopup(false)} // Pass onClose function
+               
               />
             )}
           </div>
         ) : (
-          <ProfileDropdown userName={userName} onLogout={handleLogout} />
+          <ProfileDropdown userEmail={userEmail} handleLogout={handleLogout} />
         )}
       </div>
     </header>

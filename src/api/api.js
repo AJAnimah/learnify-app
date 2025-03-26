@@ -4,10 +4,9 @@ import axios from "axios";
 const API_URL = "https://tmp-se-project.azurewebsites.net";
 
 // User Signup
-export const signup = async (username, email, password) => {
+export const signup = async (email, password) => {
   try {
     const response = await axios.post(`${API_URL}/api/user/auth/signup`, {
-      username,
       email,
       password,
     });
@@ -31,19 +30,19 @@ export const login = async (email, password) => {
 };
 
 // User Logout
-export const logout = async (token) => {
-  try {
-    const response = await axios.post(
-      `${API_URL}/api/user/auth/logout`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    throw error.response.data;
-  }
-};
+// export const logout = async (token) => {
+//   try {
+//     const response = await axios.post(
+//       `${API_URL}/api/user/auth/logout`,
+//       {},
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//       }
+//     );
+//     return response.data;
+//   } catch (error) {
+//     throw error.response.data;
+//   }
+// };

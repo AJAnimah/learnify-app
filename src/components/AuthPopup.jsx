@@ -1,6 +1,5 @@
 // src/components/AuthPopup.js
 import { useRef, useEffect, useState } from "react";
-import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faLock, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
@@ -9,7 +8,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { signup, login } from "../api/api";
 
-export default function AuthPopup({ isLogin, setIsLogin, onClose }) {
+export default function AuthPopup({ setIsLoggedIn, onClose }) {
   const popupRef = useRef(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -17,6 +16,7 @@ export default function AuthPopup({ isLogin, setIsLogin, onClose }) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
   const navigate = useNavigate();
 
 
@@ -37,17 +37,21 @@ export default function AuthPopup({ isLogin, setIsLogin, onClose }) {
     setIsLoading(true);
 
     try {
-      if (isLogin) {
+      if (!isRegistering) {
         // Login
         const response = await login(email, password);
-        localStorage.setItem("token", response.token); // Store token
+        localStorage.setItem("userEmail", response.user.email); // Store useremail
+        setIsLoggedIn(true)
         toast.success("Login successful!");
-        navigate("/learner"); // Redirect to learner's page
+        navigate("/"); // Redirect to homepage
       } else {
+        
         // Signup
-        await signup(email, email, password); // Use email as username
+        const response = await signup(email, password); // Use email as username
+        localStorage.setItem("userEmail", response.user.email); // Store useremail
+        setIsLoggedIn(true)
         toast.success("Signup successful!");
-        navigate("/dashboard"); // Redirect to dashboard
+        navigate("/"); // Redirect to homepage
       }
       onClose(); // Close the popup
     } catch (error) {
@@ -60,13 +64,13 @@ export default function AuthPopup({ isLogin, setIsLogin, onClose }) {
   return (
     <div className="absolute right-0 mt-4 w-80 bg-white border border-[#01589A] shadow-lg rounded-[4px] p-6" ref={popupRef}>
       {/* Heading */}
-      <h2 className="md:text-[40px] md:leading-[48px] font-bold text-center mb-4">{isLogin ? "Login" : "Sign Up"}</h2>
+      <h2 className="md:text-[40px] md:leading-[48px] font-bold text-center mb-4">{!isRegistering ? "Login" : "Sign Up"}</h2>
 
       {/* "Log in using Google or" or "Signup using Google or" */}
       <div className="text-sm text-[#01589A] font-bold text-center mb-4">
         <div className="flex items-center justify-center">
           <img src={googleIcon} alt="Google Icon" className="w-6 h-6 mr-2" />
-          {isLogin ? "Log in using Google" : "Signup using Google"}
+          {!isRegistering ? "Log in using Google" : "Signup using Google"}
         </div>
         <p className="mt-2">or</p>
       </div>
@@ -114,7 +118,7 @@ export default function AuthPopup({ isLogin, setIsLogin, onClose }) {
               <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
             </button>
           </div>
-          {isLogin && (
+          {!isRegistering && (
             <p className="text-sm text-[#01589A] mt-1">
               <a href="#" className="hover:underline">
                 Forgot password?
@@ -124,7 +128,7 @@ export default function AuthPopup({ isLogin, setIsLogin, onClose }) {
         </div>
 
         {/* Confirm Password (only for signup) */}
-        {!isLogin && (
+        {isRegistering && (
           <div className="mb-4">
             <div className="relative">
               <input
@@ -156,27 +160,21 @@ export default function AuthPopup({ isLogin, setIsLogin, onClose }) {
           className="w-full bg-[#01589A] text-white p-2 rounded"
           disabled={isLoading}
         >
-          {isLoading ? "Loading..." : isLogin ? "Login" : "Sign Up"}
+          {isLoading ? "Loading..." : !isRegistering ? "Login" : "Sign Up"}
         </button>
       </form>
 
       {/* Toggle between Login and Signup */}
       <p className="mt-4 text-center text-sm text-gray-600">
-        {isLogin ? "Need to create an account? " : "Already have an account? "}
+        {!isRegistering ? "Need to create an account? " : "Already have an account? "}
         <button
-          onClick={() => setIsLogin(!isLogin)}
+          onClick={() => setIsRegistering(!isRegistering)}
           className="text-[#01589A] underline"
         >
-          {isLogin ? "Sign Up" : "Login"}
+          {!isRegistering ? "Sign Up" : "Login"}
         </button>
       </p>
     </div>
   );
 }
 
-// Add PropTypes validation
-AuthPopup.propTypes = {
-  isLogin: PropTypes.bool.isRequired,
-  setIsLogin: PropTypes.func.isRequired,
-  onClose: PropTypes.func.isRequired,
-};

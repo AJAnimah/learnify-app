@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import PropTypes from "prop-types"; // Import PropTypes for prop validation
 
-export default function ProfileDropdown({ userName }) {
+
+export default function ProfileDropdown({userEmail, handleLogout}) {
   const [isOpen, setIsOpen] = useState(false);
-
+  
   return (
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-2 text-gray-600 hover:text-[#01589A]"
       >
-        <span>{userName}</span>
+        <span>{userEmail}</span>
         <svg
           className="w-4 h-4"
           fill="none"
@@ -43,10 +43,8 @@ export default function ProfileDropdown({ userName }) {
             Settings
           </Link>
           <button
-            onClick={() => {
-              // Handle logout
-              console.log("Logged out");
-            }}
+            onClick={  handleLogout}
+
             className="block w-full text-left px-4 py-2 text-gray-600 hover:bg-gray-100"
           >
             Logout
@@ -57,7 +55,3 @@ export default function ProfileDropdown({ userName }) {
   );
 }
 
-// Add PropTypes validation
-ProfileDropdown.propTypes = {
-  userName: PropTypes.string.isRequired, // Validate userName prop
-};
